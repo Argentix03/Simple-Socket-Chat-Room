@@ -1,4 +1,4 @@
-# SSCR Server - Simple Socket Chat Room Server (by Hoshea Yarden)
+# SSCR Server - Simple Socket Chat Room Server
 # Version: Alpha 0.5
 # This is the server app of the Simple Socket Chat Room which handles all client connections
 # todo: 1. Clean up server side prints to only whats relevant to the eye in realtime and implement a log for later debugging/analysing
@@ -53,11 +53,12 @@ def greet(conn, addr):
         print(e)
         return False
 
-def broadcast(message):
-    print(f"broadcast message:\n{message}")
+# sends message to all connections in client_list
+def broadcast(message, name):
+    print(f"broadcast message from {name}: {message}")
+    message = f"{name}: " + message
     for client in client_list:
         try:
-            print(f"client_list[client]: {client_list[client]}")
             client_list[client].send(message.encode())
             print(f"Sent message successfully to {client_list[client]} ")
         except Exception as e:
@@ -65,7 +66,6 @@ def broadcast(message):
             print(e)
 
 def client_handle(conn, addr):
-    print("client_handle")
     # if couldn't get the user to supply name and add him to the list close connection and give up on him
     if greet(conn, addr) == -1:
         conn.close()
@@ -73,11 +73,15 @@ def client_handle(conn, addr):
 
     # command has been executed and this is not a message if this is True
     # for publicly visible commands bot could use broadcast() with a non bot command for the displayed message
-    message = conn.recv(2048).decode()
-    if chatbot.evalCommand(message):
-        return
-    else:
-        broadcast(message)
+    while True:
+        message = conn.recv(2048).decode()
+        if chatbot.evalCommand(message):
+            return
+        else:
+            for id, sock in client_list.items():
+                if sock == conn:
+                    name = name_list[id]
+            broadcast(message, name)
 
 
 # main first binds the server to the port then starts a new thread for each connection received.
@@ -100,12 +104,13 @@ def main(port):
 
 # Simple sanity check before calling main with port number
 if __name__ == '__main__':
-    # if len(sys.argv) != 2:
-    #     print("Usage: sscr-Server.py port")
-    #     exit()
-    # else:
-    #     try:
-    #         port = int(sys.argv[2])
-    #     except Exception as e:
-    #         print(e)
-    main(8000)
+    if len(sys.argv) != 2:
+        print("Usage: sscr-Server.py port")
+        exit()
+    else:
+        try:
+            port = int(sys.argv[2])
+            main(port)
+        except Exception as e:
+            print("Fatal error: failed to launch")
+            print(e)
