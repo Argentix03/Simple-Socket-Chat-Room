@@ -109,7 +109,7 @@ if __name__ == '__main__':
         exit()
     else:
         try:
-            port = int(sys.argv[2])
+            port = int(sys.argv[1])
             main(port)
         except Exception as e:
             print("Fatal error: failed to launch")
