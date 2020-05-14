@@ -1,5 +1,5 @@
 # SSCR Server - Simple Socket Chat Room Server (by Hoshea Yarden)
-# Version: Beta 0.5
+# Version: Alpha 0.5
 # This is the server app of the Simple Socket Chat Room which handles all client connections
 # todo: 1. Clean up server side prints to only whats relevant to the eye in realtime and implement a log for later debugging/analysing
 #       2. More bot commands!
@@ -17,6 +17,7 @@ client_list = {}  # dict of {client(id) -> connections from socket.accept()}
 name_list = {}  # dict of {id -> name} to keep track of names of users and their connection (which are tied to the id)
 id_counter = 1  # counter that will increment to keep unique ID for every joined user
 server = socket.socket()  # the global server socket variable
+
 
 # joins a member and return his ID if successful, on fail return -1
 def join(conn, name):
@@ -40,9 +41,8 @@ def join(conn, name):
 def greet(conn, addr):
     try:
         print(f"New thread: {conn}")
-        conn.send(f"Welcome to the {room_name}\nYour address ({addr}) will not be shared with anyone\nPlease Type in your name: ".encode())
+        conn.send(f"Welcome to {room_name}\nYour address ({addr}) will not be shared with anyone\nPlease Type in your name: ".encode())
         user_name = conn.recv(1024).decode()
-        # _thread.start_new_thread(join, (conn, user_name))
         user_id =  join(conn, user_name)
         if user_id != -1:
             return user_id
