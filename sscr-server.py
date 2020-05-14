@@ -62,7 +62,7 @@ def broadcast(message, name):
             client_list[client].send(message.encode())
             print(f"Sent message successfully to {client_list[client]} ")
         except Exception as e:
-            print(f"\nFailed to send message to {client_list[client]}")
+            print(f"\nFailed to send message to {name_list[client]} ({client})")
             print(e)
 
 def client_handle(conn, addr):
