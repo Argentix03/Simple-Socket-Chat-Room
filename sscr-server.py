@@ -12,12 +12,22 @@ import socket
 import chatbot
 import sys
 import _thread
-room_name = "Default-room 1"
-client_list = {}  # dict of {client(id) -> connections from socket.accept()}
-name_list = {}  # dict of {id -> name} to keep track of names of users and their connection (which are tied to the id)
-id_counter = 1  # counter that will increment to keep unique ID for every joined user
-server = socket.socket()  # the global server socket variable
+import datetime
+try:
+    room_name = "Default-room 1"
+    client_list = {}  # dict of {client(id) -> connections from socket.accept()}
+    name_list = {}  # dict of {id -> name} to keep track of names of users and their connection (which are tied to the id)
+    id_counter = 1  # counter that will increment to keep unique ID for every joined user
+    server = socket.socket()  # the global server socket variable
+    logfile = open('sscr-server.log', 'a') # used for log
+except Exception as e:
+    print(e)
 
+# logs a message to the logfile
+def log(logMessage):
+    global logfile
+    logfile.write(f"{datetime.datetime.now()}: {logMessage}\n")
+    logfile.flush()
 
 # joins a member and return his ID if successful, on fail return -1
 def join(conn, name):
@@ -28,8 +38,9 @@ def join(conn, name):
         client_list[id_counter] = conn
         name_list[id_counter] = name
         print(f"Added: {name}, ID: {id_counter}")
+        log(f"Added: {name}, ID: {id_counter}")
+        log(f"Updated client_list: {client_list}")
         id_counter += 1
-        print(f"Updated client_list: {client_list}")
         return id_counter - 1
 
     except Exception as e:
@@ -40,7 +51,7 @@ def join(conn, name):
 # returns the user id or -1 on fail
 def greet(conn, addr):
     try:
-        print(f"New thread: {conn}")
+        log(f"New thread: {conn}")
         conn.send(f"Welcome to {room_name}\nYour address ({addr}) will not be shared with anyone\nPlease Type in your name: ".encode())
         user_name = conn.recv(1024).decode()
         user_id =  join(conn, user_name)
@@ -51,36 +62,41 @@ def greet(conn, addr):
 
     except Exception as e:
         print(e)
+        log(e)
         return False
 
 # sends message to all connections in client_list
 def broadcast(message, name):
-    print(f"broadcast message from {name}: {message}")
     message = f"{name}: " + message
+    print(message)
+    log(message)
     for client in client_list:
         try:
             client_list[client].send(message.encode())
-            print(f"Sent message successfully to {client_list[client]} ")
+            log(f"Sent message successfully to {client_list[client]}")
         except Exception as e:
-            print(f"\nFailed to send message to {name_list[client]} ({client})")
-            print(e)
+            log(f"\nFailed to send message to {name_list[client]} ({client})")
+            log(e)
 
 def client_handle(conn, addr):
     # if couldn't get the user to supply name and add him to the list close connection and give up on him
     if greet(conn, addr) == -1:
         conn.close()
         return
-
+    # find name
+    for id, sock in client_list.items():
+        if sock == conn:
+            name = name_list[id]
+            userId = id
+    broadcast(f"{name} has joined the room", 'Server')
     # command has been executed and this is not a message if this is True
     # for publicly visible commands bot could use broadcast() with a non bot command for the displayed message
     while True:
         message = conn.recv(2048).decode()
-        if chatbot.evalCommand(message):
-            return
+        command = chatbot.evalCommand(message)
+        if command:
+            log(f"command: {command} userID: {userId} name: {name}")
         else:
-            for id, sock in client_list.items():
-                if sock == conn:
-                    name = name_list[id]
             broadcast(message, name)
 
 
@@ -96,7 +112,8 @@ def main(port):
         while True:
             conn, addr = server.accept()
             print(f"{addr} Connected")
-            _thread.start_new_thread(client_handle, (conn,addr))
+            log(f"{addr} Connected")
+            _thread.start_new_thread(client_handle, (conn, addr))
 
     except Exception as e:
         print(e)
@@ -114,3 +131,4 @@ if __name__ == '__main__':
         except Exception as e:
             print("Fatal error: failed to launch")
             print(e)
+# main(8000)

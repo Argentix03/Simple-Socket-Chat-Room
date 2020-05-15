@@ -17,9 +17,10 @@ def evalCommand(command):
     # skips messages that aren't really commands.
     # sorry for wasting tiny bit of memory in the call stack for implementing this tiny part inside the function
     if not command.startswith(bot_prefix):
-        return False
+        return None
+    command = command.replace(bot_prefix, "")
     if command not in commands_list:
-        return False
+        return None
     else:
         print(f"command: {command} has been executed")
-        return True  # here will be handling of commands
+        return command  # here will be handling of commands
