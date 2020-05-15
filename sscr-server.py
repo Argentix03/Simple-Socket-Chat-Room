@@ -64,9 +64,9 @@ def greet(conn, addr):
     try:
         log(f"New thread: {conn}")
         conn.send(f"Welcome to {config.room_name}\nYour address will not be shared with anyone\nPlease Type in your name: ".encode())
-        user_name = conn.recv(1024).decode()
+        user_name = conn.recv(1024).decode().replace("\n", "")
         user_id =  join(conn, user_name)
-        conn.send(f"Your user ID: {user_id}".encode())
+        conn.send(f"Your user ID: {user_id}\n".encode())
         if user_id != -1:
             return user_id
         else:
@@ -82,6 +82,7 @@ def broadcast(message, name):
     message = f"{name}: " + message
     print(message)
     log(message)
+    message += "\n"
     for client in client_list:
         try:
             client_list[client].send(message.encode())
@@ -104,13 +105,13 @@ def client_handle(conn, addr):
     # command has been executed and this is not a message if this is True
     # for publicly visible commands bot could use broadcast() with a non bot command for the displayed message
     while True:
-        message = conn.recv(2048).decode()
+        message = conn.recv(2048).decode().replace("\n", "")
 
         command = chatbot.evalCommand(message, userId)
         if command:
             log(f"command: {command} userID: {userId} name: {name}")
             if command.startswith("private:"):
-                conn.send("-Command successfully executed-".encode())
+                conn.send("-Command successfully executed-\n".encode())
             elif command.startswith("public:"):
                 broadcast(command.split(":")[1], "ChatBot")
         else:

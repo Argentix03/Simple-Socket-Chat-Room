@@ -1,5 +1,5 @@
 # SSCR Client - Simple Socket Chat Room Client
-# Version: Alpha 0.5
+# Version: Alpha 0.6
 # This is the client app of the Simple Socket Chat Room which connect to server and then
 # send and receive information on two different threads
 # todo: 1. add domain to ip instead of using static ip
@@ -7,13 +7,12 @@
 import socket
 import _thread
 import sys
-import threading
 # listen to server, could be handled in a different parallel thread
 def listen_to_server():
     try:
         while True:
             recvData = s.recv(2048).decode()
-            print(recvData, flush=True)
+            print(recvData, end="", flush=True)
 
     except Exception as e:
         print(e)
