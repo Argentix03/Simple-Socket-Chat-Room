@@ -31,8 +31,8 @@ def listen_to_client():
 
 s = socket.socket()
 # making a connection, until connection is established... codes on hold.
-#s.connect(('35.246.209.173', 8000))  # to kali.phoenixtv.me
-s.connect(('127.0.0.1', 8000))  # for local testing
+s.connect(('35.246.209.173', 8000))  # to kali.phoenixtv.me
+#s.connect(('127.0.0.1', 8000))  # for local testing
 print("connection established")
 
 # first get info from the server, until connection is established... codes on hold.
