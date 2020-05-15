@@ -1,2 +1,2 @@
 Simple Socket Chat Room
-for practicing sockets in python
+A simple chat room made for practicing sockets in python
