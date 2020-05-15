@@ -139,7 +139,7 @@ def main(port):
         print(e)
 
 
-Simple sanity check before calling main with port number
+# Simple sanity check before calling main with port number
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print("Usage: sscr-server.py port")
