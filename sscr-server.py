@@ -91,12 +91,35 @@ def broadcast(message, name):
             log(f"\nFailed to send message to {config.name_list[client]} ({client})")
             log(e)
 
+def bot_reply_handl(command, userId, conn):
+    try:
+        name = config.name_list[userId]
+        log(f"command: {command} userID: {userId} name: {name}")
+        if command.startswith("private:"):
+            conn.send("-Command successfully executed-\n".encode())
+        elif command.startswith("fail:"):
+            conn.send("-Command failed to execute-\n".encode())
+        elif command.startswith("public:"):
+            broadcast(command.split(":")[1], "ChatBot")
+        elif command.startswith("kick="):
+            userToKick = command.split(":")[0].split("=")[1]
+            for id, username in config.name_list.items():
+                if username == userToKick:
+                    userToKick = id  # get a userID by name so the associated connection can be closed
+            broadcast(f"{config.name_list[userToKick]} has bee kicked from the room", "ChatBot")
+            client_list[userToKick].send("you have been kicked...\n").encode()
+            client_list[userToKick].close()
+            return
+    except Exception as e:
+        log(e)
+
+# handles each connection thread
 def client_handle(conn, addr):
     # if couldn't get the user to supply name and add him to the list close connection and give up on him
     if greet(conn, addr) == -1:
         conn.close()
         return
-    # find name
+    # find name and userID associated with the socket
     for id, sock in client_list.items():
         if sock == conn:
             name = config.name_list[id]
@@ -108,21 +131,7 @@ def client_handle(conn, addr):
 
         command = chatbot.evalCommand(message, userId) # command has been executed and this is not a message if this is True
         if command:
-            log(f"command: {command} userID: {userId} name: {name}")
-            if command.startswith("private:"):
-                conn.send("-Command successfully executed-\n".encode())
-            elif command.startswith("fail:"):
-                conn.send("-Command failed to execute-\n".encode())
-            elif command.startswith("public:"):
-                broadcast(command.split(":")[1], "ChatBot")
-            elif command.startswith("kick="):
-                userToKick = command.split(":")[0].split("=")[1]
-                for id, username in config.name_list.items():
-                    if username == userToKick:
-                        userToKick = id  # get a userID by name so the associated connection can be closed
-                broadcast(f"{config.name_list[userToKick]} has bee kicked from the room", "ChatBot")
-                print(type(client_list[userToKick]))
-
+            bot_reply_handl(command, userId, conn)
         else:
             name = config.name_list[userId]  # update name before sending message
             broadcast(message, name)
