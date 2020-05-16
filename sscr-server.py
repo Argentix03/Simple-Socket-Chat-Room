@@ -4,9 +4,9 @@
 # todo: 1. [DONE] Clean up server side prints to only whats relevant to the eye in realtime and implement a log for later debugging/analysing
 #       2. More bot commands!
 #       3. Permission system for bot commands
-#       4. Generate Token on server lunch for admin to authenticate with when they connect with the client for bots permmissions
-#       5. Bot kick command
-#       7. Implement a timeout or fail counter for failed sends to client for dropping connections
+#       4. [DONE] Generate Token on server lunch for admin to authenticate with when they connect with the client for bots permmissions
+#       5.  kick command
+#       7. Implement a timeout or fail counter for failed sends to client for dropping unnecessary connections
 
 import socket
 import chatbot
@@ -103,17 +103,26 @@ def client_handle(conn, addr):
             userId = id
     broadcast(f"{name} has joined the room", 'Server')
     # command has been executed and this is not a message if this is True
-    # for publicly visible commands bot could use broadcast() with a non bot command for the displayed message
     while True:
         message = conn.recv(2048).decode().replace("\n", "")
 
-        command = chatbot.evalCommand(message, userId)
+        command = chatbot.evalCommand(message, userId) # command has been executed and this is not a message if this is True
         if command:
             log(f"command: {command} userID: {userId} name: {name}")
             if command.startswith("private:"):
                 conn.send("-Command successfully executed-\n".encode())
+            elif command.startswith("fail:"):
+                conn.send("-Command failed to execute-\n".encode())
             elif command.startswith("public:"):
                 broadcast(command.split(":")[1], "ChatBot")
+            elif command.startswith("kick="):
+                userToKick = command.split(":")[0].split("=")[1]
+                for id, username in config.name_list.items():
+                    if username == userToKick:
+                        userToKick = id  # get a userID by name so the associated connection can be closed
+                broadcast(f"{config.name_list[userToKick]} has bee kicked from the room", "ChatBot")
+                print(type(client_list[userToKick]))
+
         else:
             name = config.name_list[userId]  # update name before sending message
             broadcast(message, name)
@@ -141,15 +150,15 @@ def main(port):
 
 
 # Simple sanity check before calling main with port number
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: sscr-server.py port")
-        exit()
-    else:
-        try:
-            port = int(sys.argv[1])
-            main(port)
-        except Exception as e:
-            print("Fatal error: failed to launch")
-            print(e)
-# main(8000)
+# if __name__ == '__main__':
+    # if len(sys.argv) != 2:
+    #     print("Usage: sscr-server.py port")
+    #     exit()
+    # else:
+    #     try:
+    #         port = int(sys.argv[1])
+    #         main(port)
+    #     except Exception as e:
+    #         print("Fatal error: failed to launch")
+    #         print(e)
+main(8000)

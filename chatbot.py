@@ -1,6 +1,6 @@
 import config
 
-commands_list = ['setRoomName', 'setBotPrefix', 'auth', 'editname']
+commands_list = ['setRoomName', 'setBotPrefix', 'auth', 'editname', 'kick', 'whoadmin']
 
 # setRoomName - sets the room name to name. return True on sucess False on failure
 def setRoomName(name):
@@ -28,8 +28,9 @@ def setAdmin(id, token):
         id = id.split(":")[1]
         token = token.split(':')[1]
         if token == config.token:
-            config.adminID = id
+            config.adminID = int(id)
             print(f"setAdmin({id}, {token}): admin ID set to {id} successfully")
+            print(f"config.adminID: {config.adminID}")
             return True
         else:
             return False
@@ -47,8 +48,31 @@ def setName(userID, name):
         print(f"setName({userID}, {name}): something went wrong")
         return False
 
+# kickUser - check if the user calling kick is allowed to kick. the kick is done by the server not the bot via special reply string
+def kickUser(userID, userToKick):
+    try:
+        if userID == config.adminID:
+            print(f"kickUser({userID}, {userToKick}): kick {userToKick} successfully")
+            return True
+        else:
+            return False
+    except:
+        print(f"kickUser({userID}, {userToKick}): something went wrong")
+        return False
+
+def getAdmin():
+    try:
+        print(f"getAdmin(): got admin successfully")
+        if config.adminID == 0:
+            return "Not yet set"
+        else:
+            print(f"config.name_list[config.adminID]: {config.name_list[config.adminID]}")
+            return config.name_list[config.adminID]
+    except Exception as e:
+        print(f"getAdmin(): something went wrong")
+        print(e)
 # evalCommands - handle bot commands by calling the right functions or not at all
-# returns the command after executing it with a prefix of private: public: or None if the command isn't valid.
+# returns the command after executing it with a prefix of private: public: fail: or returns None if the command isn't valid.
 def evalCommand(command, userID):
     # skips messages that aren't really commands.
     # sorry for wasting tiny bit of memory in the call stack for implementing this tiny part inside the function
@@ -59,19 +83,26 @@ def evalCommand(command, userID):
     if commandArgs[0] not in commands_list:
         return None
     else:
-        reply = "private"
+        reply = "fail"
         print(f"command: {command} has been called")
         if commandArgs[0] == "setRoomName":
-            setRoomName(command.replace(commandArgs[0] + " ", ""))  # gets rid of the first command arg and space
-            reply = "public"
+            if setRoomName(command.replace(commandArgs[0] + " ", "")):  # gets rid of the first command arg and space
+                reply = "public"
         elif commandArgs[0] == "setBotPrefix":
-            setBotPrefix(command.replace(commandArgs[0] + " ", "")) # gets rid of the first command arg and space
-            reply = "public"
+            if setBotPrefix(command.replace(commandArgs[0] + " ", "")): # gets rid of the first command arg and space
+                reply = "public"
         elif commandArgs[0] == "auth":
-            setAdmin(commandArgs[1], commandArgs[2])
-            reply = "private"
+            if setAdmin(commandArgs[1], commandArgs[2]):
+                reply = "private"
         elif commandArgs[0] == "editname":
-            setName(userID, command.replace(commandArgs[0] + " ", ""))
-            reply = "private"
+            if setName(userID, command.replace(commandArgs[0] + " ", "")):
+                reply = "private"
+        elif commandArgs[0] == "kick":
+            if kickUser(userID, command.replace(commandArgs[0] + " ", "")):
+                reply = "kick"+"="+f"{command.replace(commandArgs[0] + ' ', '')}"  # Server does the kicking with this reply
+        elif commandArgs[0] == "whoadmin":
+            admin = getAdmin()
+            if admin:
+                return f"public: Admin - {admin}"
 
-        return reply + ":" + command  #
+        return reply + ":" + command
