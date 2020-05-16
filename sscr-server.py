@@ -1,11 +1,11 @@
 # SSCR Server - Simple Socket Chat Room Server
-# Version: Alpha 0.6
+# Version: Alpha 0.9
 # This is the server app of the Simple Socket Chat Room which handles all client connections
 # todo: 1. [DONE] Clean up server side prints to only whats relevant to the eye in realtime and implement a log for later debugging/analysing
 #       2. More bot commands!
-#       3. Permission system for bot commands
+#       3. [DONE] Permission system for bot commands
 #       4. [DONE] Generate Token on server lunch for admin to authenticate with when they connect with the client for bots permmissions
-#       5.  kick command
+#       5. [DONE] kick command
 #       7. Implement a timeout or fail counter for failed sends to client for dropping unnecessary connections
 
 import socket
