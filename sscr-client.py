@@ -19,14 +19,19 @@ def listen_to_server():
 
 # send information
 def listen_to_client():
-    while True:
-        sendData = input()
-        if sendData.lower() == 'exit':
-            s.send(sendData.encode())
-            s.close()
-        else:
-            s.send(sendData.encode())
-
+    try:
+        while True:
+            sendData = input()
+            if sendData.lower() == 'exit':
+                s.send(sendData.encode())
+                s.close()
+            else:
+                s.send(sendData.encode())
+    except EOFError:  # using ctrl-c inside input()
+        print("Goodbye!")
+        exit()
+    except Exception as e:
+        print(e)
 
 s = socket.socket()
 # making a connection, until connection is established... codes on hold.
@@ -37,8 +42,14 @@ print("connection established")
 # first get info from the server, until connection is established... codes on hold.
 recvData = s.recv(2048).decode()
 print(recvData)
-_thread.start_new_thread(listen_to_client, ())
-listen_to_server()
+try:
+    _thread.start_new_thread(listen_to_client, ())
+    listen_to_server()
+except EOFError:
+    print("Goodbye!")
+    exit()
+except Exception as e:
+    print(e)
 
 
 
