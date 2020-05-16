@@ -159,15 +159,15 @@ def main(port):
 
 
 # Simple sanity check before calling main with port number
-# if __name__ == '__main__':
-    # if len(sys.argv) != 2:
-    #     print("Usage: sscr-server.py port")
-    #     exit()
-    # else:
-    #     try:
-    #         port = int(sys.argv[1])
-    #         main(port)
-    #     except Exception as e:
-    #         print("Fatal error: failed to launch")
-    #         print(e)
-main(8000)
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: sscr-server.py port")
+        exit()
+    else:
+        try:
+            port = int(sys.argv[1])
+            main(port)
+        except Exception as e:
+            print("Fatal error: failed to launch")
+            print(e)
+# main(8000)
