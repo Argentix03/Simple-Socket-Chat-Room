@@ -3,8 +3,6 @@ Simple Socket Chat Room
 Simple Python implementation of chat room using TCP/IP IPv4 sockets.
 I made this tool to practice sockets in python.
 
-It comes with a python client that is more enriched but can also be used with netcat.
-
 For client you can use netcat or or the more enriched sscr-client.py.
 
 ## Install
