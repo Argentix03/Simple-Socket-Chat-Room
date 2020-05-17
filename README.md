@@ -18,7 +18,7 @@ $ python3 sscr-server.py <port>
 ```
 Using sscr-client.py: $ python3 sscr-client.py <ip> <port>
 
-Using netcat: $ netcat <ip> <port>
+Using netcat: $ nc <ip> <port>
 ```
 ## Chat commands
 The following commands are available and handled by the chatbot (notice ./ is just the default prefix and can be changed):
