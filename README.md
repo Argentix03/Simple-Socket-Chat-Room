@@ -25,8 +25,8 @@ The following commands are available and handled by the chatbot (notice ./ is ju
 
 | Command	            | Description             |
 ----------------------|-------------------------|
-|./editname <name> | change your nickname.      |
-|./setRoomName	<name> | change the room name.  |
-|./setBotPrefix <prefix> | change the bot prefix.|
-|./kick <user> | kicks a user from the room (requires chatroom admin role).|
-|./auth <id:id> <token:token> | authenticate as the chatroom admin.
+|./editname \<name> | change your nickname.      |
+|./setRoomName	\<name> | change the room name.  |
+|./setBotPrefix \<prefix> | change the bot prefix.|
+|./kick \<user> | kicks a user from the room (requires chatroom admin role).|
+|./auth \<id:id> \<token:token> | authenticate as the chatroom admin.
