@@ -9,7 +9,6 @@ For client you can use netcat or or the more enriched sscr-client.py.
 
 ## Install
 $ git clone https://github.com/Argentix03/Simple-Socket-Chat-Room.git
-$ cd Simple-Socket-Chat-Room
 
 ## Starting Server
 ```
