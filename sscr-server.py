@@ -1,12 +1,12 @@
 # SSCR Server - Simple Socket Chat Room Server
-# Version: Alpha 0.6
+# Version: Alpha 0.9
 # This is the server app of the Simple Socket Chat Room which handles all client connections
 # todo: 1. [DONE] Clean up server side prints to only whats relevant to the eye in realtime and implement a log for later debugging/analysing
-#       2. More bot commands!
-#       3. Permission system for bot commands
-#       4. Generate Token on server lunch for admin to authenticate with when they connect with the client for bots permmissions
-#       5. Bot kick command
-#       7. Implement a timeout or fail counter for failed sends to client for dropping connections
+#       2. [DONE] More bot commands!
+#       3. [DONE] Permission system for bot commands
+#       4. [DONE] Generate Token on server lunch for admin to authenticate with when they connect with the client for bots permmissions
+#       5. [DONE] kick command
+#       7. Implement a timeout or fail counter for failed sends to client for dropping unnecessary connections
 
 import socket
 import chatbot
@@ -91,29 +91,47 @@ def broadcast(message, name):
             log(f"\nFailed to send message to {config.name_list[client]} ({client})")
             log(e)
 
+def bot_reply_handl(command, userId, conn):
+    try:
+        name = config.name_list[userId]
+        log(f"command: {command} userID: {userId} name: {name}")
+        if command.startswith("private:"):
+            conn.send("-Command successfully executed-\n".encode())
+        elif command.startswith("fail:"):
+            conn.send("-Command failed to execute-\n".encode())
+        elif command.startswith("public:"):
+            broadcast(command.split(":")[1], "ChatBot")
+        elif command.startswith("kick="):
+            userToKick = command.split(":")[0].split("=")[1]
+            for id, username in config.name_list.items():
+                if username == userToKick:
+                    userToKick = id  # get a userID by name so the associated connection can be closed
+            broadcast(f"{config.name_list[userToKick]} has bee kicked from the room", "ChatBot")
+            client_list[userToKick].send("you have been kicked...\n").encode()
+            client_list[userToKick].close()
+            return
+    except Exception as e:
+        log(e)
+
+# handles each connection thread
 def client_handle(conn, addr):
     # if couldn't get the user to supply name and add him to the list close connection and give up on him
     if greet(conn, addr) == -1:
         conn.close()
         return
-    # find name
+    # find name and userID associated with the socket
     for id, sock in client_list.items():
         if sock == conn:
             name = config.name_list[id]
             userId = id
     broadcast(f"{name} has joined the room", 'Server')
     # command has been executed and this is not a message if this is True
-    # for publicly visible commands bot could use broadcast() with a non bot command for the displayed message
     while True:
         message = conn.recv(2048).decode().replace("\n", "")
 
-        command = chatbot.evalCommand(message, userId)
+        command = chatbot.evalCommand(message, userId) # command has been executed and this is not a message if this is True
         if command:
-            log(f"command: {command} userID: {userId} name: {name}")
-            if command.startswith("private:"):
-                conn.send("-Command successfully executed-\n".encode())
-            elif command.startswith("public:"):
-                broadcast(command.split(":")[1], "ChatBot")
+            bot_reply_handl(command, userId, conn)
         else:
             name = config.name_list[userId]  # update name before sending message
             broadcast(message, name)
